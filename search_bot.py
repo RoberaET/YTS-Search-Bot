@@ -60,6 +60,7 @@ Welcome! I can search for movies on YTS.mx for you.
         keyboard = [
             [InlineKeyboardButton("🔍 Search Movies", callback_data="search_movies")],
             [InlineKeyboardButton("📥 Get Torrents", callback_data="get_torrents")],
+            [InlineKeyboardButton("🆕 What's New?", callback_data="whats_new")],
             [InlineKeyboardButton("❓ Help", callback_data="help")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -462,6 +463,7 @@ Please search for a movie first using:
             keyboard = [
                 [InlineKeyboardButton("🔍 Search Movies", callback_data="search_movies")],
                 [InlineKeyboardButton("📥 Get Torrents", callback_data="get_torrents")],
+                [InlineKeyboardButton("🆕 What's New?", callback_data="whats_new")],
                 [InlineKeyboardButton("❓ Help", callback_data="help")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
@@ -844,7 +846,7 @@ If your search returns multiple movies, use:
     async def show_main_menu_buttons(self, message):
         """Show main menu buttons after any action"""
         reply_markup = self.get_main_menu_keyboard()
-        await message.reply_text("", reply_markup=reply_markup)
+        await message.reply_text("🎬 **Main Menu**\n\nUse the buttons below to interact with me:", parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
 
     async def handle_back_to_menu(self, query):
         """Handle back to menu button press"""
@@ -868,6 +870,7 @@ Welcome! I can search for movies on YTS.mx for you.
         keyboard = [
             [InlineKeyboardButton("🔍 Search Movies", callback_data="search_movies")],
             [InlineKeyboardButton("📥 Get Torrents", callback_data="get_torrents")],
+            [InlineKeyboardButton("🆕 What's New?", callback_data="whats_new")],
             [InlineKeyboardButton("❓ Help", callback_data="help")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
