@@ -116,7 +116,22 @@ If your search returns multiple movies, use:
             movies = await self.search_movies(query)
             if not movies:
                 await update.message.reply_text(f"❌ No movies found for: **{query}**", parse_mode=ParseMode.MARKDOWN)
-                await self.show_main_menu_buttons(update.message)
+                try:
+                    await self.show_main_menu_buttons(update.message)
+                except Exception as e:
+                    logger.error(f"Error showing main menu buttons: {e}")
+                    # Fallback: send a simple message with buttons
+                    try:
+                        keyboard = [
+                            [InlineKeyboardButton("🔍 Search Movies", callback_data="search_movies")],
+                            [InlineKeyboardButton("📥 Get Torrents", callback_data="get_torrents")],
+                            [InlineKeyboardButton("🆕 What's New?", callback_data="whats_new")],
+                            [InlineKeyboardButton("❓ Help", callback_data="help")]
+                        ]
+                        reply_markup = InlineKeyboardMarkup(keyboard)
+                        await update.message.reply_text("🎬 **Main Menu**", parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
+                    except Exception as e2:
+                        logger.error(f"Fallback button error: {e2}")
                 return
             # Send results
             for i, movie in enumerate(movies[:3], 1):  # Limit to 3 results
@@ -143,8 +158,24 @@ If your search returns multiple movies, use:
         except Exception as e:
             logger.error(f"Error in search: {e}")
             await update.message.reply_text(f"❌ Error searching for: **{query}**\n\nPlease try again later.", parse_mode=ParseMode.MARKDOWN)
-        # Always show main menu buttons at the end
-        await self.show_main_menu_buttons(update.message)
+        finally:
+            # Always show main menu buttons at the end, even if there was an error
+            try:
+                await self.show_main_menu_buttons(update.message)
+            except Exception as e:
+                logger.error(f"Error showing main menu buttons: {e}")
+                # Fallback: send a simple message with buttons
+                try:
+                    keyboard = [
+                        [InlineKeyboardButton("🔍 Search Movies", callback_data="search_movies")],
+                        [InlineKeyboardButton("📥 Get Torrents", callback_data="get_torrents")],
+                        [InlineKeyboardButton("🆕 What's New?", callback_data="whats_new")],
+                        [InlineKeyboardButton("❓ Help", callback_data="help")]
+                    ]
+                    reply_markup = InlineKeyboardMarkup(keyboard)
+                    await update.message.reply_text("🎬 **Main Menu**", parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
+                except Exception as e2:
+                    logger.error(f"Fallback button error: {e2}")
     
     async def search_movies(self, query: str):
         """Search for movies by title"""
@@ -875,7 +906,22 @@ Welcome! I can search for movies on YTS.mx for you.
             movies = await self.search_movies(query)
             if not movies:
                 await update.message.reply_text(f"❌ No movies found for: **{query}**", parse_mode=ParseMode.MARKDOWN)
-                await self.show_main_menu_buttons(update.message)
+                try:
+                    await self.show_main_menu_buttons(update.message)
+                except Exception as e:
+                    logger.error(f"Error showing main menu buttons: {e}")
+                    # Fallback: send a simple message with buttons
+                    try:
+                        keyboard = [
+                            [InlineKeyboardButton("🔍 Search Movies", callback_data="search_movies")],
+                            [InlineKeyboardButton("📥 Get Torrents", callback_data="get_torrents")],
+                            [InlineKeyboardButton("🆕 What's New?", callback_data="whats_new")],
+                            [InlineKeyboardButton("❓ Help", callback_data="help")]
+                        ]
+                        reply_markup = InlineKeyboardMarkup(keyboard)
+                        await update.message.reply_text("🎬 **Main Menu**", parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
+                    except Exception as e2:
+                        logger.error(f"Fallback button error: {e2}")
                 return
             # Send results
             for i, movie in enumerate(movies[:3], 1):  # Limit to 3 results
@@ -902,8 +948,24 @@ Welcome! I can search for movies on YTS.mx for you.
         except Exception as e:
             logger.error(f"Error in text search: {e}")
             await update.message.reply_text(f"❌ Error searching for: **{query}**\n\nPlease try again later.", parse_mode=ParseMode.MARKDOWN)
-        # Always show main menu buttons at the end
-        await self.show_main_menu_buttons(update.message)
+        finally:
+            # Always show main menu buttons at the end, even if there was an error
+            try:
+                await self.show_main_menu_buttons(update.message)
+            except Exception as e:
+                logger.error(f"Error showing main menu buttons: {e}")
+                # Fallback: send a simple message with buttons
+                try:
+                    keyboard = [
+                        [InlineKeyboardButton("🔍 Search Movies", callback_data="search_movies")],
+                        [InlineKeyboardButton("📥 Get Torrents", callback_data="get_torrents")],
+                        [InlineKeyboardButton("🆕 What's New?", callback_data="whats_new")],
+                        [InlineKeyboardButton("❓ Help", callback_data="help")]
+                    ]
+                    reply_markup = InlineKeyboardMarkup(keyboard)
+                    await update.message.reply_text("🎬 **Main Menu**", parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
+                except Exception as e2:
+                    logger.error(f"Fallback button error: {e2}")
     
     def format_movie_info(self, movie: dict) -> str:
         """Format movie information for display"""
