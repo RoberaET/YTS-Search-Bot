@@ -399,8 +399,11 @@ If your search returns multiple movies, use:
                     parse_mode=ParseMode.MARKDOWN
                 )
             
-            # Show main menu buttons after sending torrents
-            await self.show_main_menu_buttons(update.message)
+            # Show main menu buttons after sending torrents - send as NEW message
+            menu_message = f"✅ **Torrent files sent for: {title}**\n\n📥 Check the files above!"
+            reply_markup = self.get_main_menu_keyboard()
+            
+            await update.message.reply_text(menu_message, parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
             
         except Exception as e:
             logger.error(f"Error in torrent command: {e}")
@@ -800,12 +803,18 @@ If your search returns multiple movies, use:
                 await query.edit_message_text(error_message, parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
                 return
             
-            # Success message with main menu buttons
+            # Success message with main menu buttons - send as NEW message
             menu_message = f"✅ **Torrent files sent for: {title}**\n\n📥 Check the files above!"
             reply_markup = self.get_main_menu_keyboard()
             
             logger.info(f"Showing main menu buttons after sending torrents for: {title}")
-            await query.edit_message_text(menu_message, parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
+            # Send as a NEW message instead of editing the existing one
+            await self.bot.send_message(
+                chat_id=query.message.chat_id,
+                text=menu_message,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=reply_markup
+            )
             
         except Exception as e:
             logger.error(f"Error in torrent callback: {e}")
@@ -843,11 +852,17 @@ If your search returns multiple movies, use:
             await self.send_torrents_for_movie_callback(query, movie)
             await asyncio.sleep(1)  # Small delay between movies
         
-        # Final message with main menu buttons
+        # Final message with main menu buttons - send as NEW message
         final_message = f"✅ **All torrent files sent for {len(movies)} movies!**\n\n📥 Check the files above!"
         reply_markup = self.get_main_menu_keyboard()
         
-        await query.edit_message_text(final_message, parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
+        # Send as a NEW message instead of editing the existing one
+        await self.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=final_message,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=reply_markup
+        )
     
     def get_main_menu_keyboard(self):
         """Get the main menu keyboard markup"""
