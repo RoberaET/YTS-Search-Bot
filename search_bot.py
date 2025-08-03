@@ -101,9 +101,10 @@ If your search returns multiple movies, use:
 • etc.
 
 **🆕 What's New Feature:**
-• Shows movies added to YTS.mx in the last 3-4 days
-• Perfect for discovering recent releases
-• Use the "What's New?" button to check recent additions
+• Shows featured 2025 movies from YTS.mx using website filters
+• Filtered by: Year 2025, Rating 6+, All genres, All qualities
+• Sorted by Featured (like website homepage)
+• Use the "What's New?" button to see the featured 2025 movies
         """
         await update.message.reply_text(help_message, parse_mode=ParseMode.MARKDOWN)
     
@@ -537,17 +538,22 @@ If your search returns multiple movies, use:
         await query.edit_message_text(help_message, parse_mode=ParseMode.MARKDOWN)
     
     async def handle_whats_new_button(self, query):
-        """Handle What's New button press - show recent movies from last 3-4 days"""
-        await query.edit_message_text("🆕 **Checking for recent releases...**\n\n⏳ Please wait while I fetch the latest movies from YTS.mx...", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
+        """Handle What's New button press - show featured 2025 movies from homepage"""
+        await query.edit_message_text("🆕 **Checking Featured 2025 Movies...**\n\n⏳ Please wait while I fetch the featured 2025 movies from YTS.mx using website filters...", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
         
         try:
-            # Fetch latest movies from YTS
+            # Fetch 2025 movies using exact website filtering parameters
             async with aiohttp.ClientSession() as session:
                 url = "https://yts.mx/api/v2/list_movies.json"
                 params = {
-                    'limit': 50,  # Get more movies to ensure we have recent ones
-                    'sort_by': 'date_added',
-                    'order_by': 'desc'
+                    'limit': 200,  # Get more movies to filter from
+                    'sort_by': 'featured',  # Order By: Featured (from website)
+                    'order_by': 'desc',
+                    'quality': 'all',  # Quality: All
+                    'genre': 'all',  # Genre: All
+                    'minimum_rating': '6',  # Rating: 6+
+                    'year': '2025',  # Year: 2025
+                    'language': 'all'  # Language: All
                 }
                 
                 async with session.get(url, params=params) as response:
@@ -555,43 +561,31 @@ If your search returns multiple movies, use:
                         data = await response.json()
                         movies = data.get('data', {}).get('movies', [])
                     else:
-                        await query.edit_message_text("❌ **Error fetching recent movies**\n\nUnable to connect to YTS.mx. Please try again later.", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
+                        await query.edit_message_text("❌ **Error fetching 2025 movies**\n\nUnable to connect to YTS.mx. Please try again later.", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
                         return
             
             if not movies:
-                await query.edit_message_text("❌ **No recent movies found**\n\nNo movies were found in the last few days.", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
+                await query.edit_message_text("❌ **No movies found**\n\nUnable to fetch movies from YTS.mx.", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
                 return
             
-            # Filter movies from last 3-4 days
-            from datetime import datetime, timedelta
-            recent_movies = []
-            cutoff_date = datetime.now() - timedelta(days=4)  # 4 days ago
-            
+            # Filter for 2025 movies only
+            movies_2025 = []
             for movie in movies:
-                date_added = movie.get('date_uploaded')
-                if date_added:
-                    try:
-                        # Parse the date (YTS format: "2025-08-03 12:34:56")
-                        movie_date = datetime.strptime(date_added, "%Y-%m-%d %H:%M:%S")
-                        if movie_date >= cutoff_date:
-                            recent_movies.append(movie)
-                    except:
-                        continue
+                year = movie.get('year', 0)
+                if year == 2025:
+                    movies_2025.append(movie)
             
-            if not recent_movies:
-                await query.edit_message_text("🆕 **No Recent Releases**\n\nNo new movies have been added to YTS.mx in the last 3-4 days.\n\nCheck back later for fresh releases!", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
+            if not movies_2025:
+                await query.edit_message_text("🆕 **No 2025 Movies Found**\n\nNo 2025 movies are currently available on YTS.mx.\n\nCheck back later for new releases!", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
                 return
             
-            # Sort by date (newest first)
-            recent_movies.sort(key=lambda x: x.get('date_uploaded', ''), reverse=True)
-            
-            # Limit to top 10 recent movies
-            recent_movies = recent_movies[:10]
+            # Limit to top 10 2025 movies
+            latest_2025_movies = movies_2025[:10]
             
             # Create the message
-            message = f"🆕 **Recent Releases (Last 3-4 Days)**\n\nFound **{len(recent_movies)}** new movies on YTS.mx:\n\n"
+            message = f"🔥 **Featured 2025 Movies**\n\nFound **{len(latest_2025_movies)}** 2025 movies on YTS.mx (Rating 6+):\n\n"
             
-            for i, movie in enumerate(recent_movies, 1):
+            for i, movie in enumerate(latest_2025_movies, 1):
                 title = movie.get('title', 'Unknown')
                 year = movie.get('year', 'Unknown')
                 rating = movie.get('rating', 0)
@@ -600,8 +594,12 @@ If your search returns multiple movies, use:
                 
                 # Format the date
                 try:
-                    movie_date = datetime.strptime(date_added, "%Y-%m-%d %H:%M:%S")
-                    formatted_date = movie_date.strftime("%b %d")
+                    if date_added != 'Unknown':
+                        from datetime import datetime
+                        date_obj = datetime.strptime(date_added, "%Y-%m-%d %H:%M:%S")
+                        formatted_date = date_obj.strftime('%b %d')
+                    else:
+                        formatted_date = "Unknown"
                 except:
                     formatted_date = "Unknown"
                 
@@ -615,7 +613,7 @@ If your search returns multiple movies, use:
             
         except Exception as e:
             logger.error(f"Error in What's New feature: {e}")
-            await query.edit_message_text("❌ **Error fetching recent movies**\n\nSomething went wrong while checking for recent releases. Please try again later.", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
+            await query.edit_message_text("❌ **Error fetching 2025 movies**\n\nSomething went wrong while checking for 2025 movies. Please try again later.", parse_mode=ParseMode.MARKDOWN, reply_markup=self.get_main_menu_keyboard())
     
     async def handle_torrent_specific_button(self, query):
         """Handle specific torrent button press (torrent_1, torrent_2, etc.)"""
