@@ -1,0 +1,9 @@
+# Telegram Bot Configuration
+# Get your bot token from @BotFather on Telegram
+BOT_TOKEN=your_bot_token_here
+
+# Optional: Set minimum rating (default is 6.0)
+# MIN_RATING=6.0
+
+# Optional: Set maximum results to show (default is 10)
+# MAX_RESULTS=10 
