@@ -108,29 +108,20 @@ If your search returns multiple movies, use:
         await update.message.reply_text(help_message, parse_mode=ParseMode.MARKDOWN)
     
     async def search_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle /search command"""
-        if not context.args:
-            await update.message.reply_text("❌ Please provide a movie title to search for.\n\nExample: `/search 28 Years Later`", parse_mode=ParseMode.MARKDOWN)
-            return
-        
+        """Handle /search command - search for a movie"""
         query = ' '.join(context.args)
         await update.message.reply_text(f"🔍 Searching for: **{query}**...", parse_mode=ParseMode.MARKDOWN)
-        
         try:
             # Search for the movie
             movies = await self.search_movies(query)
-            
             if not movies:
                 await update.message.reply_text(f"❌ No movies found for: **{query}**", parse_mode=ParseMode.MARKDOWN)
+                await self.show_main_menu_buttons(update.message)
                 return
-            
             # Send results
             for i, movie in enumerate(movies[:3], 1):  # Limit to 3 results
                 notification = self.format_movie_info(movie)
-                
-                # Get movie poster
                 poster_url = movie.get('large_cover_image') or movie.get('medium_cover_image')
-                
                 if poster_url:
                     try:
                         await self.bot.send_photo(
@@ -140,26 +131,20 @@ If your search returns multiple movies, use:
                             parse_mode=ParseMode.MARKDOWN
                         )
                     except:
-                        # Fallback to text-only
                         await update.message.reply_text(notification, parse_mode=ParseMode.MARKDOWN)
                 else:
                     await update.message.reply_text(notification, parse_mode=ParseMode.MARKDOWN)
-                
                 await asyncio.sleep(1)  # Small delay between messages
-            
             if len(movies) > 3:
                 await update.message.reply_text(f"📋 Showing first 3 results. Found {len(movies)} total movies for: **{query}**", parse_mode=ParseMode.MARKDOWN)
-            
             # Store the search results for this user
             user_id = update.effective_user.id
             self.last_search_results[user_id] = movies[:3]  # Store first 3 results
-            
-            # Show main menu buttons after search results
-            await self.show_main_menu_buttons(update.message)
-                
         except Exception as e:
             logger.error(f"Error in search: {e}")
             await update.message.reply_text(f"❌ Error searching for: **{query}**\n\nPlease try again later.", parse_mode=ParseMode.MARKDOWN)
+        # Always show main menu buttons at the end
+        await self.show_main_menu_buttons(update.message)
     
     async def search_movies(self, query: str):
         """Search for movies by title"""
@@ -880,28 +865,22 @@ Welcome! I can search for movies on YTS.mx for you.
     async def handle_text_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle plain text messages as search queries"""
         query = update.message.text.strip()
-        
         if not query:
             await update.message.reply_text("❌ Please provide a movie title to search for.", parse_mode=ParseMode.MARKDOWN)
+            await self.show_main_menu_buttons(update.message)
             return
-        
         await update.message.reply_text(f"🔍 Searching for: **{query}**...", parse_mode=ParseMode.MARKDOWN)
-        
         try:
             # Search for the movie
             movies = await self.search_movies(query)
-            
             if not movies:
                 await update.message.reply_text(f"❌ No movies found for: **{query}**", parse_mode=ParseMode.MARKDOWN)
+                await self.show_main_menu_buttons(update.message)
                 return
-            
             # Send results
             for i, movie in enumerate(movies[:3], 1):  # Limit to 3 results
                 notification = self.format_movie_info(movie)
-                
-                # Get movie poster
                 poster_url = movie.get('large_cover_image') or movie.get('medium_cover_image')
-                
                 if poster_url:
                     try:
                         await self.bot.send_photo(
@@ -911,26 +890,20 @@ Welcome! I can search for movies on YTS.mx for you.
                             parse_mode=ParseMode.MARKDOWN
                         )
                     except:
-                        # Fallback to text-only
                         await update.message.reply_text(notification, parse_mode=ParseMode.MARKDOWN)
                 else:
                     await update.message.reply_text(notification, parse_mode=ParseMode.MARKDOWN)
-                
                 await asyncio.sleep(1)  # Small delay between messages
-            
             if len(movies) > 3:
                 await update.message.reply_text(f"📋 Showing first 3 results. Found {len(movies)} total movies for: **{query}**", parse_mode=ParseMode.MARKDOWN)
-            
             # Store the search results for this user
             user_id = update.effective_user.id
             self.last_search_results[user_id] = movies[:3]  # Store first 3 results
-            
-            # Show main menu buttons after search results
-            await self.show_main_menu_buttons(update.message)
-                
         except Exception as e:
             logger.error(f"Error in text search: {e}")
             await update.message.reply_text(f"❌ Error searching for: **{query}**\n\nPlease try again later.", parse_mode=ParseMode.MARKDOWN)
+        # Always show main menu buttons at the end
+        await self.show_main_menu_buttons(update.message)
     
     def format_movie_info(self, movie: dict) -> str:
         """Format movie information for display"""
